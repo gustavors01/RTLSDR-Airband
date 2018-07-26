@@ -65,6 +65,9 @@ static int parse_outputs(libconfig::Setting &outs, channel_t *channel, int i, in
 			fdata->prefix = strdup(outs[o]["filename_template"]);
 			fdata->continuous = outs[o].exists("continuous") ?
 				(bool)(outs[o]["continuous"]) : false;
+			fdata->split_trans = outs[o].exists("split_trans") ?
+				(bool)(outs[o]["split_trans"]) : false;
+			fdata->split_file = false;
 			fdata->append = (!outs[o].exists("append")) || (bool)(outs[o]["append"]);
 			channel->need_mp3 = 1;
 		} else if(!strncmp(outs[o]["type"], "rawfile", 7)) {

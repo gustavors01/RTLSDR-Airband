@@ -117,6 +117,8 @@ struct file_data {
 	const char *prefix;
 	char *suffix;
 	bool continuous;
+	bool split_trans;
+    bool split_file;
 	bool append;
 	FILE *f;
 };

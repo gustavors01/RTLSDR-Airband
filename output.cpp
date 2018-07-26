@@ -292,7 +292,12 @@ void process_outputs(channel_t *channel, int cur_scan_freq) {
 			}
 		} else if(channel->outputs[k].type == O_FILE || channel->outputs[k].type == O_RAWFILE) {
 			file_data *fdata = (file_data *)(channel->outputs[k].data);
-			if(fdata->continuous == false && channel->axcindicate == ' ' && channel->outputs[k].active == false) continue;
+			//if(fdata->continuous == false && channel->axcindicate == ' ' && channel->outputs[k].active == false) continue;
+            if(channel->axcindicate == ' ' && channel->outputs[k].active == false) {
+                if(fdata->split_trans) fdata->split_file = true;
+                if(fdata->continuous == false) continue;
+            }
+			
 			time_t t = time(NULL);
 			struct tm *tmp;
 			if(use_localtime)
@@ -302,12 +307,15 @@ void process_outputs(channel_t *channel, int cur_scan_freq) {
 
 			char suffix[32];
 			if(strftime(suffix, sizeof(suffix),
-				channel->outputs[k].type == O_FILE ? "_%Y%m%d_%H.mp3" : "_%Y%m%d_%H.cs16",
+//				channel->outputs[k].type == O_FILE ? "_%Y%m%d_%H.mp3" : "_%Y%m%d_%H.cs16",
+				channel->outputs[k].type == O_RAWFILE ? "_%Y%m%d_%H.cs16" : fdata->split_trans ? "_%Y%m%d_%H%M%S.mp3" : "_%Y%m%d_%H.mp3",
 			tmp) == 0) {
 				log(LOG_NOTICE, "strftime returned 0\n");
 				continue;
 			}
-			if(fdata->suffix == NULL || strcmp(suffix, fdata->suffix)) {	// need to open new file
+//			if(fdata->suffix == NULL || strcmp(suffix, fdata->suffix)) {	// need to open new file
+            if(fdata->suffix == NULL || ( fdata->split_file && strcmp(suffix, fdata->suffix))) {    // need to open new file
+                fdata->split_file = false;
 				fdata->suffix = strdup(suffix);
 				char *filename = (char *)XCALLOC(1, strlen(fdata->dir) + strlen(fdata->prefix) + strlen(fdata->suffix) + 2);
 				sprintf(filename, "%s/%s%s", fdata->dir, fdata->prefix, fdata->suffix);
